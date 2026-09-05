@@ -7,7 +7,8 @@ Usage:
     python3 hyper.py architect --name my-pipeline --purpose "Build X"
     python3 hyper.py forge --template production --target /path
     python3 hyper.py run --template production --target /path
-    python3 hyper.py list [templates|blocks|skills]
+    python3 hyper.py skill --name my-skill --purpose "What it does"
+    python3 hyper.py list [templates|blocks|skills|domains]
 """
 
 from __future__ import annotations
@@ -116,7 +117,48 @@ def cmd_list(args: argparse.Namespace) -> int:
         for name, info in CONNECTORS.items():
             print(f"  {name}: {info['purpose']} ({info['type']})")
 
+    elif args.what == "domains":
+        from skill_forge import SKILL_DOMAINS
+        for domain, info in SKILL_DOMAINS.items():
+            print(f"  {domain}: {info['description']}")
+
     return 0
+
+
+def cmd_skill(args: argparse.Namespace) -> int:
+    """Run the skill forge."""
+    from skill_forge import SkillConcept, SkillForge
+
+    concept = SkillConcept(
+        name=args.name,
+        purpose=args.purpose,
+        domain=args.domain,
+        triggers=[t.strip() for t in args.triggers.split(",") if t.strip()] or [args.name],
+        tools=[t.strip() for t in args.tools.split(",") if t.strip()],
+        connectors=[c.strip() for c in args.connectors.split(",") if c.strip()],
+        complexity=args.complexity,
+        quality_target=args.quality,
+    )
+
+    output_dir = Path(args.output) if args.output else None
+    forge = SkillForge(quality_target=args.quality)
+    result = forge.forge(concept, output_dir)
+
+    if args.format in ("markdown", "both"):
+        print(result.to_markdown())
+
+    if args.format in ("json", "both"):
+        print("\n" + json.dumps(result.to_dict(), indent=2))
+
+    print(f"\n{'='*60}")
+    print(f"SKILL FORGE: {concept.name}")
+    print(f"Quality: {result.quality_score:.2f}/10.0")
+    print(f"Validation: {'PASS' if result.validation_passed else 'FAIL'}")
+    print(f"Components: {result.components_built}")
+    print(f"Path: {result.skill_path}")
+    print(f"{'='*60}")
+
+    return 0 if result.validation_passed else 1
 
 
 def main() -> int:
@@ -134,10 +176,14 @@ Examples:
   # Run the 10-phase production pipeline
   python3 hyper.py run --template production --target /path/to/project
 
+  # Forge a new skill
+  python3 hyper.py skill --name my-skill --purpose "What it does" --domain engineering
+
   # List available options
   python3 hyper.py list templates
   python3 hyper.py list blocks
   python3 hyper.py list skills
+  python3 hyper.py list domains
         """,
     )
 
@@ -168,9 +214,22 @@ Examples:
     run.add_argument("--skip", default="", help="Skip phases (comma-separated)")
     run.add_argument("--format", choices=["json", "markdown"], default="markdown")
 
+    # Skill command
+    skill = sub.add_parser("skill", help="Forge a new skill from concept")
+    skill.add_argument("--name", required=True, help="Skill name")
+    skill.add_argument("--purpose", required=True, help="Skill purpose")
+    skill.add_argument("--domain", default="engineering", choices=["engineering", "research", "security", "data", "design", "memory", "orchestration"])
+    skill.add_argument("--triggers", default="", help="Trigger phrases (comma-separated)")
+    skill.add_argument("--tools", default="", help="Required tools (comma-separated)")
+    skill.add_argument("--connectors", default="", help="Required connectors (comma-separated)")
+    skill.add_argument("--complexity", type=int, default=5, help="Complexity 1-10")
+    skill.add_argument("--quality", type=float, default=9.0, help="Quality target")
+    skill.add_argument("--output", default=None, help="Output directory")
+    skill.add_argument("--format", choices=["json", "markdown", "both"], default="markdown")
+
     # List command
     ls = sub.add_parser("list", help="List available options")
-    ls.add_argument("what", choices=["templates", "blocks", "skills", "connectors"])
+    ls.add_argument("what", choices=["templates", "blocks", "skills", "connectors", "domains"])
 
     args = parser.parse_args()
 
@@ -182,6 +241,7 @@ Examples:
         "architect": cmd_architect,
         "forge": cmd_forge,
         "run": cmd_run,
+        "skill": cmd_skill,
         "list": cmd_list,
     }
 
