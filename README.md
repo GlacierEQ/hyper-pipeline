@@ -14,20 +14,25 @@ python3 hyper.py forge --template production --target /path/to/project
 # Run the 10-phase production pipeline
 python3 hyper.py run --template production --target /path/to/project
 
+# Forge a new skill
+python3 hyper.py skill --name my-skill --purpose "What it does" --domain engineering
+
 # List available options
 python3 hyper.py list templates
 python3 hyper.py list blocks
 python3 hyper.py list skills
 python3 hyper.py list connectors
+python3 hyper.py list domains
 ```
 
-## Three Engines
+## Four Engines
 
 | Engine | Purpose | Command |
 |--------|---------|---------|
 | **Architect** | Build new pipelines from concepts | `python3 hyper.py architect` |
 | **Forge** | Compose pipelines from blocks/templates | `python3 hyper.py forge` |
 | **Runner** | Execute pipelines against targets | `python3 hyper.py run` |
+| **Skill Forge** | Create production-grade skills | `python3 hyper.py skill` |
 
 ## Templates
 
@@ -60,6 +65,38 @@ python3 hyper.py list connectors
 - `research-deep` — Multi-source research
 - `compliance-check` — Regulatory compliance
 - `deploy-safe` — Staged deployment
+
+## Skill Forge
+
+The Skill Forge creates production-grade skills with 7 phases:
+
+```
+CONCEPT → DECOMPOSE → DESIGN → BUILD → VALIDATE → TEST → PUBLISH
+```
+
+### Skill Domains
+
+| Domain | Description |
+|--------|-------------|
+| `engineering` | Code, architecture, systems |
+| `research` | Investigation, analysis, synthesis |
+| `security` | Audit, threat model, compliance |
+| `data` | Analytics, visualization, reporting |
+| `design` | UI, UX, visual design |
+| `memory` | Persistence, context, state |
+| `orchestration` | Workflow, delegation, coordination |
+
+### Skill Output Structure
+
+```
+my-skill/
+├── SKILL.md                    # Main skill definition
+├── README.md                   # Usage documentation
+├── tests/
+│   └── test_my_skill.py        # Test suite
+└── references/
+    └── REFERENCE.md            # Quick reference
+```
 
 ## Skills (35+)
 
@@ -121,7 +158,8 @@ hyper-pipeline/
 │   ├── architect.py            # Pipeline builder
 │   ├── forge.py                # Pipeline composer
 │   ├── pipeline_runner.py      # Pipeline executor
-│   └── production_auditor.py   # 7-dimension auditor
+│   ├── production_auditor.py   # 7-dimension auditor
+│   └── skill_forge.py          # Skill development pipeline
 ├── templates/
 │   ├── security.yaml
 │   ├── research.yaml
@@ -133,7 +171,8 @@ hyper-pipeline/
 ├── tests/
 │   ├── test_architect.py       # 27 tests
 │   ├── test_forge.py           # 30 tests
-│   └── test_pipeline.py        # 21 tests
+│   ├── test_pipeline.py        # 21 tests
+│   └── test_skill_forge.py     # 22 tests
 └── references/
     └── remediation.md
 ```
@@ -148,6 +187,7 @@ python3 run_tests.py
 python3 -m pytest tests/test_architect.py -v
 python3 -m pytest tests/test_forge.py -v
 python3 -m pytest tests/test_pipeline.py -v
+python3 -m pytest tests/test_skill_forge.py -v
 ```
 
 ## License
