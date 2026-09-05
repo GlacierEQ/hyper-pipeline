@@ -17,15 +17,19 @@ python3 hyper.py run --template production --target /path/to/project
 # Forge a new skill
 python3 hyper.py skill --name my-skill --purpose "What it does" --domain engineering
 
+# Forge a new MCP server
+python3 hyper.py mcp --name my-server --purpose "What it does" --type api
+
 # List available options
 python3 hyper.py list templates
 python3 hyper.py list blocks
 python3 hyper.py list skills
 python3 hyper.py list connectors
 python3 hyper.py list domains
+python3 hyper.py list types
 ```
 
-## Four Engines
+## Five Engines
 
 | Engine | Purpose | Command |
 |--------|---------|---------|
@@ -33,6 +37,7 @@ python3 hyper.py list domains
 | **Forge** | Compose pipelines from blocks/templates | `python3 hyper.py forge` |
 | **Runner** | Execute pipelines against targets | `python3 hyper.py run` |
 | **Skill Forge** | Create production-grade skills | `python3 hyper.py skill` |
+| **MCP Forge** | Create durable remote MCP servers | `python3 hyper.py mcp` |
 
 ## Templates
 
@@ -98,6 +103,40 @@ my-skill/
     └── REFERENCE.md            # Quick reference
 ```
 
+## MCP Forge
+
+The MCP Forge creates durable remote MCP servers with 7 phases:
+
+```
+CONCEPT → SCHEMA → IMPLEMENT → VALIDATE → TEST → DEPLOY → MONITOR
+```
+
+### MCP Server Types
+
+| Type | Description |
+|------|-------------|
+| `api` | REST/GraphQL API wrapper |
+| `database` | Database query and management |
+| `filesystem` | File operations and management |
+| `git` | Git repository operations |
+| `cloud` | Cloud service integration |
+| `monitoring` | System and service monitoring |
+| `orchestration` | Workflow and task orchestration |
+
+### MCP Server Output Structure
+
+```
+my-server/
+├── server.py                   # Main MCP server
+├── requirements.txt            # Dependencies
+├── Dockerfile                  # Container deployment
+├── config.json                 # Server configuration
+├── deploy.sh                   # Deployment script
+├── monitor.json                # Monitoring config
+└── tests/
+    └── test_server.py          # Test suite
+```
+
 ## Skills (35+)
 
 | Category | Skills |
@@ -159,7 +198,8 @@ hyper-pipeline/
 │   ├── forge.py                # Pipeline composer
 │   ├── pipeline_runner.py      # Pipeline executor
 │   ├── production_auditor.py   # 7-dimension auditor
-│   └── skill_forge.py          # Skill development pipeline
+│   ├── skill_forge.py          # Skill development pipeline
+│   └── mcp_forge.py            # MCP server creation pipeline
 ├── templates/
 │   ├── security.yaml
 │   ├── research.yaml
@@ -172,7 +212,8 @@ hyper-pipeline/
 │   ├── test_architect.py       # 27 tests
 │   ├── test_forge.py           # 30 tests
 │   ├── test_pipeline.py        # 21 tests
-│   └── test_skill_forge.py     # 22 tests
+│   ├── test_skill_forge.py     # 22 tests
+│   └── test_mcp_forge.py       # 24 tests
 └── references/
     └── remediation.md
 ```
@@ -188,6 +229,7 @@ python3 -m pytest tests/test_architect.py -v
 python3 -m pytest tests/test_forge.py -v
 python3 -m pytest tests/test_pipeline.py -v
 python3 -m pytest tests/test_skill_forge.py -v
+python3 -m pytest tests/test_mcp_forge.py -v
 ```
 
 ## License
