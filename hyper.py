@@ -9,6 +9,9 @@ Usage:
     python3 hyper.py run --template production --target /path
     python3 hyper.py skill --name my-skill --purpose "What it does"
     python3 hyper.py mcp --name my-server --purpose "What it does"
+    python3 hyper.py test --target /path
+    python3 hyper.py doc --target /path
+    python3 hyper.py deploy --target /path --platform github
     python3 hyper.py list [templates|blocks|skills|domains|types]
 """
 
@@ -128,6 +131,11 @@ def cmd_list(args: argparse.Namespace) -> int:
         for stype, info in MCP_SERVER_TYPES.items():
             print(f"  {stype}: {info['description']}")
 
+    elif args.what == "platforms":
+        from deploy_forge import PLATFORMS
+        for name, info in PLATFORMS.items():
+            print(f"  {name}: {info['description']}")
+
     return 0
 
 
@@ -204,6 +212,90 @@ def cmd_mcp(args: argparse.Namespace) -> int:
     print(f"{'='*60}")
 
     return 0 if result.validation_passed else 1
+
+
+def cmd_test(args: argparse.Namespace) -> int:
+    """Run the test forge."""
+    from test_forge import TestForge
+
+    test_types = [t.strip() for t in args.types.split(",")]
+    output_dir = Path(args.output) if args.output else None
+
+    forge = TestForge(coverage_target=args.coverage)
+    result = forge.forge(Path(args.target), test_types, output_dir)
+
+    if args.format == "json":
+        print(json.dumps(result.to_dict(), indent=2))
+    else:
+        print(result.to_markdown())
+
+    print(f"\n{'='*60}")
+    print(f"TEST FORGE: {args.target}")
+    print(f"Modules Scanned: {result.modules_scanned}")
+    print(f"Tests Generated: {result.tests_generated}")
+    print(f"Coverage Estimate: {result.coverage_estimate:.1f}%")
+    print(f"{'='*60}")
+
+    return 0
+
+
+def cmd_doc(args: argparse.Namespace) -> int:
+    """Run the doc forge."""
+    from doc_forge import DocForge, DocLayer
+
+    if args.layers == "all":
+        layers = list(DocLayer)
+    else:
+        layers = [DocLayer(l.strip()) for l in args.layers.split(",")]
+
+    output_dir = Path(args.output) if args.output else None
+
+    forge = DocForge()
+    result = forge.forge(Path(args.target), layers, args.name, output_dir)
+
+    if args.format == "json":
+        print(json.dumps(result.to_dict(), indent=2))
+    else:
+        print(result.to_markdown())
+
+    print(f"\n{'='*60}")
+    print(f"DOC FORGE: {args.target}")
+    print(f"Layers: {', '.join(result.layers_generated)}")
+    print(f"Elements: {result.elements_documented}")
+    print(f"Links: {result.links_created}")
+    print(f"Files: {len(result.output_files)}")
+    print(f"{'='*60}")
+
+    return 0
+
+
+def cmd_deploy(args: argparse.Namespace) -> int:
+    """Run the deploy forge."""
+    from deploy_forge import DeployForge
+
+    if args.platform == "all":
+        platforms = None  # Use defaults
+    else:
+        platforms = [p.strip() for p in args.platform.split(",")]
+
+    output_dir = Path(args.output) if args.output else None
+
+    forge = DeployForge()
+    result = forge.forge(Path(args.target), platforms, output_dir)
+
+    if args.format == "json":
+        print(json.dumps(result.to_dict(), indent=2))
+    else:
+        print(result.to_markdown())
+
+    print(f"\n{'='*60}")
+    print(f"DEPLOY FORGE: {args.target}")
+    print(f"Platforms: {', '.join(result.platforms)}")
+    print(f"Configs: {result.configs_generated}")
+    print(f"Validated: {'PASS' if result.validated else 'FAIL'}")
+    print(f"{'='*60}")
+
+    return 0
 
 
 def main() -> int:
@@ -292,7 +384,30 @@ Examples:
 
     # List command
     ls = sub.add_parser("list", help="List available options")
-    ls.add_argument("what", choices=["templates", "blocks", "skills", "connectors", "domains", "types"])
+    ls.add_argument("what", choices=["templates", "blocks", "skills", "connectors", "domains", "types", "platforms"])
+
+    # Test command
+    test = sub.add_parser("test", help="Generate test suites")
+    test.add_argument("--target", required=True, help="Target directory")
+    test.add_argument("--types", default="unit,integration", help="Test types (comma-separated)")
+    test.add_argument("--coverage", type=float, default=90.0, help="Coverage target")
+    test.add_argument("--output", default=None, help="Output directory")
+    test.add_argument("--format", choices=["json", "markdown"], default="markdown")
+
+    # Doc command
+    doc = sub.add_parser("doc", help="Generate 4-layer documentation")
+    doc.add_argument("--target", required=True, help="Target directory")
+    doc.add_argument("--layers", default="all", help="Layers: human,expert,machine,mesh or 'all'")
+    doc.add_argument("--name", default=None, help="Project name")
+    doc.add_argument("--output", default=None, help="Output directory")
+    doc.add_argument("--format", choices=["json", "markdown"], default="markdown")
+
+    # Deploy command
+    deploy = sub.add_parser("deploy", help="Generate CI/CD configuration")
+    deploy.add_argument("--target", required=True, help="Target directory")
+    deploy.add_argument("--platform", default="github,docker", help="Platforms: github,vercel,docker,k8s,aws,railway or 'all'")
+    deploy.add_argument("--output", default=None, help="Output directory")
+    deploy.add_argument("--format", choices=["json", "markdown"], default="markdown")
 
     args = parser.parse_args()
 
@@ -306,6 +421,9 @@ Examples:
         "run": cmd_run,
         "skill": cmd_skill,
         "mcp": cmd_mcp,
+        "test": cmd_test,
+        "doc": cmd_doc,
+        "deploy": cmd_deploy,
         "list": cmd_list,
     }
 

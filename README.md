@@ -20,6 +20,15 @@ python3 hyper.py skill --name my-skill --purpose "What it does" --domain enginee
 # Forge a new MCP server
 python3 hyper.py mcp --name my-server --purpose "What it does" --type api
 
+# Generate test suites
+python3 hyper.py test --target /path/to/project --types unit,integration
+
+# Generate 4-layer documentation
+python3 hyper.py doc --target /path/to/project --layers all
+
+# Generate CI/CD configuration
+python3 hyper.py deploy --target /path/to/project --platform github,docker
+
 # List available options
 python3 hyper.py list templates
 python3 hyper.py list blocks
@@ -27,9 +36,10 @@ python3 hyper.py list skills
 python3 hyper.py list connectors
 python3 hyper.py list domains
 python3 hyper.py list types
+python3 hyper.py list platforms
 ```
 
-## Five Engines
+## Eight Engines
 
 | Engine | Purpose | Command |
 |--------|---------|---------|
@@ -38,6 +48,9 @@ python3 hyper.py list types
 | **Runner** | Execute pipelines against targets | `python3 hyper.py run` |
 | **Skill Forge** | Create production-grade skills | `python3 hyper.py skill` |
 | **MCP Forge** | Create durable remote MCP servers | `python3 hyper.py mcp` |
+| **Test Forge** | Auto-generate test suites | `python3 hyper.py test` |
+| **Doc Forge** | Generate 4-layer documentation | `python3 hyper.py doc` |
+| **Deploy Forge** | Create CI/CD configurations | `python3 hyper.py deploy` |
 
 ## Templates
 
@@ -137,6 +150,109 @@ my-server/
     └── test_server.py          # Test suite
 ```
 
+## Test Forge
+
+The Test Forge auto-generates comprehensive test suites:
+
+```
+SCAN → CLASSIFY → GENERATE → VALIDATE → REPORT
+```
+
+### Test Types
+
+| Type | Description |
+|------|-------------|
+| `unit` | Isolated function/method tests |
+| `integration` | Component interaction tests |
+| `e2e` | End-to-end workflow tests |
+| `property` | Property-based tests (Hypothesis) |
+| `snapshot` | Snapshot/regression tests |
+
+### Usage
+
+```bash
+# Generate unit tests only
+python3 hyper.py test --target /path --types unit
+
+# Generate unit + integration tests
+python3 hyper.py test --target /path --types unit,integration
+
+# Generate all test types with 95% coverage target
+python3 hyper.py test --target /path --types unit,integration,property --coverage 95
+```
+
+## Doc Forge
+
+The Doc Forge generates 4-layer documentation:
+
+```
+SCAN → ANALYZE → GENERATE → LINK → PUBLISH
+```
+
+### Documentation Layers
+
+| Layer | Audience | Content |
+|-------|----------|---------|
+| **L1 HUMAN** | Normal people | What and why |
+| **L2 EXPERT** | Masters of the trade | Technical why and how |
+| **L3 MACHINE** | Machines | API specs, schemas, configs |
+| **L4 MESH** | Everyone | Links all layers together |
+
+### Usage
+
+```bash
+# Generate all layers
+python3 hyper.py doc --target /path --layers all
+
+# Generate human + expert layers only
+python3 hyper.py doc --target /path --layers human,expert
+
+# Generate machine layer (OpenAPI schema)
+python3 hyper.py doc --target /path --layers machine
+```
+
+### Output Structure
+
+```
+docs_generated/
+├── L1_HUMAN.md      # What/why for normal people
+├── L2_EXPERT.md     # Technical docs for experts
+├── L3_MACHINE.json  # OpenAPI schema for machines
+└── L4_MESH.md       # Cross-reference index
+```
+
+## Deploy Forge
+
+The Deploy Forge creates CI/CD configurations:
+
+```
+ANALYZE → SELECT → CONFIGURE → VALIDATE → PUBLISH
+```
+
+### Supported Platforms
+
+| Platform | Description |
+|----------|-------------|
+| `github` | GitHub Actions CI/CD |
+| `vercel` | Vercel deployment |
+| `docker` | Docker containerization |
+| `k8s` | Kubernetes deployment |
+| `aws` | AWS Lambda (SAM) |
+| `railway` | Railway.app deployment |
+
+### Usage
+
+```bash
+# Generate GitHub Actions + Docker
+python3 hyper.py deploy --target /path --platform github,docker
+
+# Generate all platforms
+python3 hyper.py deploy --target /path --platform all
+
+# Generate Kubernetes only
+python3 hyper.py deploy --target /path --platform k8s
+```
+
 ## Skills (35+)
 
 | Category | Skills |
@@ -191,7 +307,7 @@ For complexity ≥ 7, enforces 5-step thinking chain:
 
 ```
 hyper-pipeline/
-├── hyper.py                    # Unified CLI
+├── hyper.py                    # Unified CLI (8 commands)
 ├── run_tests.py                # Test runner
 ├── scripts/
 │   ├── architect.py            # Pipeline builder
@@ -199,7 +315,10 @@ hyper-pipeline/
 │   ├── pipeline_runner.py      # Pipeline executor
 │   ├── production_auditor.py   # 7-dimension auditor
 │   ├── skill_forge.py          # Skill development pipeline
-│   └── mcp_forge.py            # MCP server creation pipeline
+│   ├── mcp_forge.py            # MCP server creation pipeline
+│   ├── test_forge.py           # Test suite generation
+│   ├── doc_forge.py            # 4-layer documentation
+│   └── deploy_forge.py         # CI/CD configuration
 ├── templates/
 │   ├── security.yaml
 │   ├── research.yaml
@@ -213,7 +332,8 @@ hyper-pipeline/
 │   ├── test_forge.py           # 30 tests
 │   ├── test_pipeline.py        # 21 tests
 │   ├── test_skill_forge.py     # 22 tests
-│   └── test_mcp_forge.py       # 24 tests
+│   ├── test_mcp_forge.py       # 24 tests
+│   └── test_three_forges.py    # 30 tests
 └── references/
     └── remediation.md
 ```
@@ -230,6 +350,7 @@ python3 -m pytest tests/test_forge.py -v
 python3 -m pytest tests/test_pipeline.py -v
 python3 -m pytest tests/test_skill_forge.py -v
 python3 -m pytest tests/test_mcp_forge.py -v
+python3 -m pytest tests/test_three_forges.py -v
 ```
 
 ## License
