@@ -12,6 +12,7 @@ Usage:
     python3 hyper.py test --target /path
     python3 hyper.py doc --target /path
     python3 hyper.py deploy --target /path --platform github
+    python3 hyper.py rename --context "working on MCP forge"
     python3 hyper.py list [templates|blocks|skills|domains|types]
 """
 
@@ -298,6 +299,24 @@ def cmd_deploy(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_rename(args: argparse.Namespace) -> int:
+    """Generate session name from context."""
+    from session_renamer import SessionRenamer
+
+    renamer = SessionRenamer()
+    result = renamer.generate(args.context, args.name)
+
+    if args.format == "json":
+        print(json.dumps(result.to_dict(), indent=2))
+    else:
+        print(f"\nSession Name: {result.name}")
+        print(f"Description: {result.description}")
+        print(f"Confidence: {result.confidence:.0%}")
+        print(f"Tags: {', '.join(result.tags)}")
+
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Hyper-Pipeline — Unified Pipeline System",
@@ -409,6 +428,12 @@ Examples:
     deploy.add_argument("--output", default=None, help="Output directory")
     deploy.add_argument("--format", choices=["json", "markdown"], default="markdown")
 
+    # Rename command
+    rename = sub.add_parser("rename", help="Generate session name from context")
+    rename.add_argument("--context", required=True, help="Session context/description")
+    rename.add_argument("--name", default=None, help="Current session name (optional)")
+    rename.add_argument("--format", choices=["json", "text"], default="text")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -424,6 +449,7 @@ Examples:
         "test": cmd_test,
         "doc": cmd_doc,
         "deploy": cmd_deploy,
+        "rename": cmd_rename,
         "list": cmd_list,
     }
 
